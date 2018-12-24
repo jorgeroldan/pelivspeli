@@ -47,7 +47,7 @@ const controlador = {
                 return res.status(500).send("Ocurrio un error al procesar la petición");
             }
             if (resultado.length > 0) {
-                let sql = `INSERT INTO voto_pelicula (competencia_id, pelicula_id) VALUES (${idCompetencia}, ${idPelicula});`;
+                let sql = `INSERT INTO voto (competencia_id, pelicula_id) VALUES (${idCompetencia}, ${idPelicula});`;
                 con_db.query(sql, (error, resultado) => {
                     console.log(`resultado: `, resultado)
                     res.send(JSON.stringify(resultado));
@@ -57,36 +57,28 @@ const controlador = {
             }
         })
     },
-    mostrarResultados: (req, res) => {
-        let idCompetencia = req.params.id;
-        let sql = `select count (*) from voto where competencia_id = ${idCompetencia} group by pelicula_id order by 1 desc`;
-        con_db.query(sql, (error, resultado) => {
-            console.log(`resultado: `, resultado)
-            res.send(JSON.stringify(resultado));
-        });
-    },
     buscarResultados: (req, res) => {
-        let idCompetencia = req.params.idCompetencia;
-        let sql = `SELECT  id, poster,titulo, COUNT(*) AS votos FROM pelicula cp JOIN pelicula ON pelicula_id = id WHERE competencia_id = ${idCompetencia} GROUP BY id, poster ORDER BY votos DESC LIMIT 3;`;
-        let sql_ = `SELECT nombre as nombre FROM voto_pelicula cp JOIN competencia c ON competencia_id = id WHERE competencia_id = ${idCompetencia};`;
-
-        con_db.query(sql_, (error_, resultado_,)=> {
-            if (error_) {
-                console.log("Hubo un error en la consulta", error_.message);
+        const idCompetencia = req.params.id; 
+        let sql = "SELECT * FROM competencia WHERE id = " + idCompetencia;
+        con_db.query(sql, (error, resultado) =>{
+            if (error) {
+                console.log("Hubo un error en la consulta", error.message);
                 return res.status(404).send("Hubo un error en la consulta");
-            } else if (resultado_.length == 0) {
-                return res.status(404).send("No hay películas votadas para esta competencia.");
             }
-
-            let nombreCompetencia = resultado_[0].nombre;
-
-            con_db.query(sql, (error, resultado) => {
+            if (resultado.length === 0) {
+                console.log("No se encontro ninguna competencia con este id");
+                return res.status(404).send("No se encontro ninguna competencia con este id");
+            }
+            const competencia = resultado[0].nombre;
+            let sql = "SELECT voto.pelicula_id, pelicula.poster, pelicula.titulo, COUNT(pelicula_id) As votos FROM voto INNER JOIN pelicula ON voto.pelicula_id = pelicula.id WHERE voto.competencia_id = " + idCompetencia + " GROUP BY voto.pelicula_id ORDER BY COUNT(pelicula_id) DESC LIMIT 3";
+    
+            con_db.query(sql, (error, resultado) =>{
                 if (error) {
                     console.log("Hubo un error en la consulta", error.message);
                     return res.status(404).send("Hubo un error en la consulta");
                 }
-                let response = {
-                    'competencia': nombreCompetencia,
+                const response = {
+                    'competencia': competencia,
                     'resultados': resultado
                 };
                 res.send(JSON.stringify(response));
