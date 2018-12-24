@@ -88,109 +88,109 @@ const controlador = {
             }
         });
     },
-    editarCompetencias: (req,res)=>{
+    editarCompetencias: (req, res) => {
         let idCompetencia = req.params.id;
         let nombreCompetencia = req.body.nombre;
         let sql = `UPDATE competencia SET nombre = '${nombreCompetencia}' WHERE id = ${idCompetencia};`;
         let sql_ = `SELECT nombre FROM competencia;`
         let nombreRepetido = false;
-      
-        con_db.query(sql_, (error_, resultado_, fields_) =>{
-          if (error_) {
-            return res.status(500).send("Hubo un error en el servidor");
-          }
-          resultado_.forEach(competencia => {
-            if (competencia.nombre == nombreCompetencia) {
-              nombreRepetido = true;
-              return res.status(422).send("Ya existe una competencia con el nombre ingresado.");
-            }
-          });
-          if (!nombreRepetido) { 
-            con_db.query(sql, (error, resultado, fields)=> {
-              if (error) {
-                return res.status(500).send("Hubo un error en el servidor");
-              }
-              res.status(200).send(`La competencia se editó correctamente.`)    
-            });
-          }
-        });
-    }, 
-    eliminarCompetencias: (req, res) => {
-        let idCompetencia = req.params.id;  
-        let sql = `DELETE FROM competencia_pelicula WHERE competencia_id = ${idCompetencia};`;
-        let sql_ = `DELETE FROM competencia WHERE id = ${idCompetencia};`;
-        
-        con_db.query(sql, (error, resultado, fields)=> {
-          if (error) {
-              console.log("Hubo un error en la consulta", error.message);
-              return res.status(404).send("Hubo un error en la consulta");
-          }  
-          con_db.query(sql_, (error_, resultado_, fields_)=> {
+
+        con_db.query(sql_, (error_, resultado_, fields_) => {
             if (error_) {
-                console.log("Hubo un error en la consulta", error_.message);
-                return res.status(404).send("Hubo un error en la consulta");
-            }  
-          });
-          res.status(200).send(`La competencia se eliminó correctamente.`)
+                return res.status(500).send("Hubo un error en el servidor");
+            }
+            resultado_.forEach(competencia => {
+                if (competencia.nombre == nombreCompetencia) {
+                    nombreRepetido = true;
+                    return res.status(422).send("Ya existe una competencia con el nombre ingresado.");
+                }
+            });
+            if (!nombreRepetido) {
+                con_db.query(sql, (error, resultado, fields) => {
+                    if (error) {
+                        return res.status(500).send("Hubo un error en el servidor");
+                    }
+                    res.status(200).send(`La competencia se editó correctamente.`)
+                });
+            }
         });
     },
-    buscarOpciones: (req, res)=>{
+    eliminarCompetencias: (req, res) => {
+        let idCompetencia = req.params.id;
+        let sql = `DELETE FROM competencia_pelicula WHERE competencia_id = ${idCompetencia};`;
+        let sql_ = `DELETE FROM competencia WHERE id = ${idCompetencia};`;
+
+        con_db.query(sql, (error, resultado, fields) => {
+            if (error) {
+                console.log("Hubo un error en la consulta", error.message);
+                return res.status(404).send("Hubo un error en la consulta");
+            }
+            con_db.query(sql_, (error_, resultado_, fields_) => {
+                if (error_) {
+                    console.log("Hubo un error en la consulta", error_.message);
+                    return res.status(404).send("Hubo un error en la consulta");
+                }
+            });
+            res.status(200).send(`La competencia se eliminó correctamente.`)
+        });
+    },
+    buscarOpciones: (req, res) => {
         let idCompetencia = req.params.id;
         let sql = `SELECT nombre, genero_id, director_id, actor_id FROM competencia WHERE id=${idCompetencia};`;
         let tablas = '';
         let condiciones = '';
         let nombreCompetencia, filtros, sql_;
 
-        con_db.query(sql, (error, resultado) =>{
-          if (error) {
-              return res.status(404).send("No se encontró la competencia");
-          }
-          filtros = resultado[0];
-          nombreCompetencia = resultado[0].nombre;  
-
-          sql_ = `SELECT * FROM pelicula ORDER BY RAND() limit 2;`;
-
-          if (filtros.genero_id != undefined) {
-            tablas = `JOIN genero g ON p.genero_id = g.id`;
-            condiciones = `WHERE g.id = ${filtros.genero_id}`
-            if (filtros.director_id != undefined) {
-              tablas += ` JOIN director d ON p.director = d.nombre`;
-              condiciones += ` AND d.id = ${filtros.director_id}`;
-            }
-            if (filtros.actor_id != undefined) {
-              tablas += ` JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
-              condiciones += ` AND ap.actor_id = ${filtros.actor_id}`;
-            }
-          }
-          if (filtros.director_id != undefined && filtros.genero_id == undefined) {
-            tablas = `JOIN director d ON p.director = d.nombre`;
-            condiciones = `WHERE d.id = ${filtros.director_id}`;
-            if (filtros.actor_id != undefined) {
-              tablas += ` JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
-              condiciones += ` AND ap.actor_id = ${filtros.actor_id}`;
-            }
-          }
-          if (filtros.actor_id != undefined && filtros.genero_id == undefined && filtros.director_id == undefined) {
-            tablas = `JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
-            condiciones = `WHERE ap.actor_id = ${filtros.actor_id}`;
-          }
-          sql_ = `SELECT p.* FROM pelicula p ${tablas} ${condiciones} ORDER BY RAND() limit 2;`;                     
-          con_db.query(sql_, (error_, resultado_)=> {
-            if (error_) {
+        con_db.query(sql, (error, resultado) => {
+            if (error) {
                 return res.status(404).send("No se encontró la competencia");
             }
-            if (resultado_ == undefined || resultado_.length < 2) {
-              return res.status(422).send("No hay resultados suficientes para realizar la competencia.");            
-            } else {
-              let response = {
-                'competencia': nombreCompetencia,
-                'peliculas': resultado_
-              };  
-              res.send(JSON.stringify(response));           
+            filtros = resultado[0];
+            nombreCompetencia = resultado[0].nombre;
+
+            sql_ = `SELECT * FROM pelicula ORDER BY RAND() limit 2;`;
+
+            if (filtros.genero_id != undefined) {
+                tablas = `JOIN genero g ON p.genero_id = g.id`;
+                condiciones = `WHERE g.id = ${filtros.genero_id}`
+                if (filtros.director_id != undefined) {
+                    tablas += ` JOIN director d ON p.director = d.nombre`;
+                    condiciones += ` AND d.id = ${filtros.director_id}`;
+                }
+                if (filtros.actor_id != undefined) {
+                    tablas += ` JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
+                    condiciones += ` AND ap.actor_id = ${filtros.actor_id}`;
+                }
             }
-          });
+            if (filtros.director_id != undefined && filtros.genero_id == undefined) {
+                tablas = `JOIN director d ON p.director = d.nombre`;
+                condiciones = `WHERE d.id = ${filtros.director_id}`;
+                if (filtros.actor_id != undefined) {
+                    tablas += ` JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
+                    condiciones += ` AND ap.actor_id = ${filtros.actor_id}`;
+                }
+            }
+            if (filtros.actor_id != undefined && filtros.genero_id == undefined && filtros.director_id == undefined) {
+                tablas = `JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
+                condiciones = `WHERE ap.actor_id = ${filtros.actor_id}`;
+            }
+            sql_ = `SELECT p.* FROM pelicula p ${tablas} ${condiciones} ORDER BY RAND() limit 2;`;
+            con_db.query(sql_, (error_, resultado_) => {
+                if (error_) {
+                    return res.status(404).send("No se encontró la competencia");
+                }
+                if (resultado_ == undefined || resultado_.length < 2) {
+                    return res.status(422).send("No hay resultados suficientes para realizar la competencia.");
+                } else {
+                    let response = {
+                        'competencia': nombreCompetencia,
+                        'peliculas': resultado_
+                    };
+                    res.send(JSON.stringify(response));
+                }
+            });
         });
-    }, 
+    },
     obtenerDosPelisRandom: (req, res) => {
         let idCompetencia = req.params.id
         const sqlCompetencia = `select id from competencia where id = ${idCompetencia}`
@@ -221,61 +221,54 @@ const controlador = {
         let idCompetencia = req.params.id;
         let idPelicula = parseInt(req.body.idPelicula);
         let sql = `INSERT INTO competencia_pelicula (competencia_id, pelicula_id) VALUES (${idCompetencia}, ${idPelicula});`;
-        con_db.query(sql, (error, resultado, fields) =>{
-          res.json(resultado);
+        con_db.query(sql, (error, resultado, fields) => {
+            res.json(resultado);
         });
     },
-    eliminarVotos: (req, res) => {
-        const idCompetencia = req.params.id;
-        let sql = "SELECT * FROM competencia WHERE id = " + idCompetencia;
-
-        con_db.query(sql, (error, resultado) => {
-            if (error) {
-                console.log("Hubo un error en la consulta", error.message);
-                return res.status(404).send("Hubo un error en la consulta");
-            }
-            if (resultado.length === 0) {
-                console.log("No se encontro ninguna competencia con este id");
-                return res.status(404).send("No se encontro ninguna competencia con este id");
-            }
-
-            let sql = "DELETE FROM voto WHERE competencia_pelicula.competencia_id = " + idCompetencia;
-
-            con_db.query(sql, (error, resultado) => {
-                if (error) {
-                    console.log("Hubo un error en la eliminacion de los votos", error.message);
-                    return res.status(500).send("Hubo un error en la eliminacion de los votos");
-                }
-                res.status(200).send();
+    reiniciarCompetenciasSinVotos: (req, res)=>{
+        let idCompetencia = req.params.id;
+        let sql = `DELETE FROM competencia_pelicula WHERE competencia_id = ${idCompetencia};`;
+        let sqlCompetencia = `SELECT * FROM competencia WHERE id = ${idCompetencia};`
+      
+        con_db.query(sqlCompetencia, (error_, resultado_,)=> {
+          if (resultado_ == 0) {
+            return res.status(404).send("No existe la competencia seleccionada.");
+          }else{
+            con_db.query(sql, (error, resultado, fields)=> {
+              if (error) {
+                return res.status(500).send("Hubo un error en el servidor");
+              }
+            res.status(200).send(`La competencia se reinició correctamente.`)
             });
+          }
         });
-    },
+    }, 
     buscarResultados: (req, res) => {
         let idCompetencia = req.params.id;
         let sql = `SELECT cp.pelicula_id, p.poster, p.titulo, COUNT(*) AS votos FROM competencia_pelicula cp JOIN pelicula p ON pelicula_id = p.id WHERE cp.competencia_id = ${idCompetencia} GROUP BY cp.pelicula_id, p.poster ORDER BY votos DESC LIMIT 3;`;
         let sql_ = `SELECT c.nombre as nombre FROM competencia_pelicula cp JOIN competencia c ON competencia_id = c.id WHERE cp.competencia_id = ${idCompetencia};`;
-      
-        con_db.query(sql_, (error_, resultado_, fields_)=> {
-          if (error_) {
-            console.log("Hubo un error en la consulta", error_.message);
-            return res.status(404).send("Hubo un error en la consulta");
-          } else if (resultado_.length == 0) {
-            return res.status(404).send("No hay películas votadas para esta competencia.");
-          }
-      
-          let nombreCompetencia = resultado_[0].nombre;
-      
-          con_db.query(sql, (error, resultado, fields)=> {
-            if (error) {
-              console.log("Hubo un error en la consulta", error.message);
-              return res.status(404).send("Hubo un error en la consulta");
+
+        con_db.query(sql_, (error_, resultado_, fields_) => {
+            if (error_) {
+                console.log("Hubo un error en la consulta", error_.message);
+                return res.status(404).send("Hubo un error en la consulta");
+            } else if (resultado_.length == 0) {
+                return res.status(404).send("No hay películas votadas para esta competencia.");
             }
-          let response = {
-            'competencia': nombreCompetencia,
-            'resultados': resultado
-          };
-            res.send(JSON.stringify(response));
-          });
+
+            let nombreCompetencia = resultado_[0].nombre;
+
+            con_db.query(sql, (error, resultado, fields) => {
+                if (error) {
+                    console.log("Hubo un error en la consulta", error.message);
+                    return res.status(404).send("Hubo un error en la consulta");
+                }
+                let response = {
+                    'competencia': nombreCompetencia,
+                    'resultados': resultado
+                };
+                res.send(JSON.stringify(response));
+            });
         });
     },
     buscarGenero: (req, res) => {

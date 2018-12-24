@@ -16,12 +16,12 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
-//Consultas archivos desde el servidor
+//Consultas archivos desde el servidor con path
 app.use('/', express.static(path.join(__dirname, '/../cliente')));
 app.use('/', express.static(path.join(__dirname, '/../cliente/html')))
 app.use('/', express.static(path.join(__dirname, '/../cliente/html/administrar')))
 
-//rutas
+//rutas get
 app.get('/actores', controlador.buscarActor)
 app.get('/directores', controlador.buscarDirector)
 app.get('/generos', controlador.buscarGenero)
@@ -30,11 +30,13 @@ app.get('/competencias/:id', controlador.listarCompetenciaId);
 app.get('/competencias/:id/peliculas', controlador.buscarOpciones);
 app.get('/competencias/:id/peliculas', controlador.obtenerDosPelisRandom);
 app.get('/competencias/:id/resultados', controlador.buscarResultados);
+//rutas post
 app.post('/competencias', controlador.nuevaCompetencia);
 app.post('/competencias/:id/voto', controlador.guardarVotos);
 app.put('/competencias/:id', controlador.editarCompetencias);
+//rutas delete
 app.delete('/competencias/:id', controlador.eliminarCompetencias);
-app.delete('/competencias/:id/votos', controlador.eliminarVotos);
+app.delete('/competencias/:id/votos', controlador.reiniciarCompetenciasSinVotos);
 
 
 
