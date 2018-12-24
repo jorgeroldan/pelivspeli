@@ -88,6 +88,33 @@ const controlador = {
             }
         });
     },
+    editarCompetencias: (req,res)=>{
+        let idCompetencia = req.params.id;
+        let nombreCompetencia = req.body.nombre;
+        let sql = `UPDATE competencia SET nombre = '${nombreCompetencia}' WHERE id = ${idCompetencia};`;
+        let sql_ = `SELECT nombre FROM competencia;`
+        let nombreRepetido = false;
+      
+        con_db.query(sql_, (error_, resultado_, fields_) =>{
+          if (error_) {
+            return res.status(500).send("Hubo un error en el servidor");
+          }
+          resultado_.forEach(competencia => {
+            if (competencia.nombre == nombreCompetencia) {
+              nombreRepetido = true;
+              return res.status(422).send("Ya existe una competencia con el nombre ingresado.");
+            }
+          });
+          if (!nombreRepetido) { 
+            con_db.query(sql, (error, resultado, fields)=> {
+              if (error) {
+                return res.status(500).send("Hubo un error en el servidor");
+              }
+              res.status(200).send(`La competencia se editó correctamente.`)    
+            });
+          }
+        });
+    }, 
     eliminarCompetencias: (req, res) => {
         let idCompetencia = req.params.id;  
         let sql = `DELETE FROM competencia_pelicula WHERE competencia_id = ${idCompetencia};`;
@@ -107,63 +134,63 @@ const controlador = {
           res.status(200).send(`La competencia se eliminó correctamente.`)
         });
     },
-    // buscarOpciones: (req, res)=>{
-    //     let idCompetencia = req.params.id;
-    //     let sql = `SELECT nombre, genero_id, director_id, actor_id FROM competencia WHERE id=${idCompetencia};`;
-    //     let tablas = '';
-    //     let condiciones = '';
-    //     let nombreCompetencia, filtros, sql_;
+    buscarOpciones: (req, res)=>{
+        let idCompetencia = req.params.id;
+        let sql = `SELECT nombre, genero_id, director_id, actor_id FROM competencia WHERE id=${idCompetencia};`;
+        let tablas = '';
+        let condiciones = '';
+        let nombreCompetencia, filtros, sql_;
 
-    //     con_db.query(sql, (error, resultado) =>{
-    //       if (error) {
-    //           return res.status(404).send("No se encontró la competencia");
-    //       }
-    //       filtros = resultado[0];
-    //       nombreCompetencia = resultado[0].nombre;  
+        con_db.query(sql, (error, resultado) =>{
+          if (error) {
+              return res.status(404).send("No se encontró la competencia");
+          }
+          filtros = resultado[0];
+          nombreCompetencia = resultado[0].nombre;  
 
-    //       sql_ = `SELECT * FROM pelicula ORDER BY RAND() limit 2;`;
+          sql_ = `SELECT * FROM pelicula ORDER BY RAND() limit 2;`;
 
-    //       if (filtros.genero_id != undefined) {
-    //         tablas = `JOIN genero g ON p.genero_id = g.id`;
-    //         condiciones = `WHERE g.id = ${filtros.genero_id}`
-    //         if (filtros.director_id != undefined) {
-    //           tablas += ` JOIN director d ON p.director = d.nombre`;
-    //           condiciones += ` AND d.id = ${filtros.director_id}`;
-    //         }
-    //         if (filtros.actor_id != undefined) {
-    //           tablas += ` JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
-    //           condiciones += ` AND ap.actor_id = ${filtros.actor_id}`;
-    //         }
-    //       }
-    //       if (filtros.director_id != undefined && filtros.genero_id == undefined) {
-    //         tablas = `JOIN director d ON p.director = d.nombre`;
-    //         condiciones = `WHERE d.id = ${filtros.director_id}`;
-    //         if (filtros.actor_id != undefined) {
-    //           tablas += ` JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
-    //           condiciones += ` AND ap.actor_id = ${filtros.actor_id}`;
-    //         }
-    //       }
-    //       if (filtros.actor_id != undefined && filtros.genero_id == undefined && filtros.director_id == undefined) {
-    //         tablas = `JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
-    //         condiciones = `WHERE ap.actor_id = ${filtros.actor_id}`;
-    //       }
-    //       sql_ = `SELECT p.* FROM pelicula p ${tablas} ${condiciones} ORDER BY RAND() limit 2;`;                     
-    //       con_db.query(sql_, (error_, resultado_)=> {
-    //         if (error_) {
-    //             return res.status(404).send("No se encontró la competencia");
-    //         }
-    //         if (resultado_ == undefined || resultado_.length < 2) {
-    //           return res.status(422).send("No hay resultados suficientes para realizar la ocmpetencia.");            
-    //         } else {
-    //           let response = {
-    //             'competencia': nombreCompetencia,
-    //             'peliculas': resultado_
-    //           };  
-    //           res.send(JSON.stringify(response));           
-    //         }
-    //       });
-    //     });
-    // }, 
+          if (filtros.genero_id != undefined) {
+            tablas = `JOIN genero g ON p.genero_id = g.id`;
+            condiciones = `WHERE g.id = ${filtros.genero_id}`
+            if (filtros.director_id != undefined) {
+              tablas += ` JOIN director d ON p.director = d.nombre`;
+              condiciones += ` AND d.id = ${filtros.director_id}`;
+            }
+            if (filtros.actor_id != undefined) {
+              tablas += ` JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
+              condiciones += ` AND ap.actor_id = ${filtros.actor_id}`;
+            }
+          }
+          if (filtros.director_id != undefined && filtros.genero_id == undefined) {
+            tablas = `JOIN director d ON p.director = d.nombre`;
+            condiciones = `WHERE d.id = ${filtros.director_id}`;
+            if (filtros.actor_id != undefined) {
+              tablas += ` JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
+              condiciones += ` AND ap.actor_id = ${filtros.actor_id}`;
+            }
+          }
+          if (filtros.actor_id != undefined && filtros.genero_id == undefined && filtros.director_id == undefined) {
+            tablas = `JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
+            condiciones = `WHERE ap.actor_id = ${filtros.actor_id}`;
+          }
+          sql_ = `SELECT p.* FROM pelicula p ${tablas} ${condiciones} ORDER BY RAND() limit 2;`;                     
+          con_db.query(sql_, (error_, resultado_)=> {
+            if (error_) {
+                return res.status(404).send("No se encontró la competencia");
+            }
+            if (resultado_ == undefined || resultado_.length < 2) {
+              return res.status(422).send("No hay resultados suficientes para realizar la competencia.");            
+            } else {
+              let response = {
+                'competencia': nombreCompetencia,
+                'peliculas': resultado_
+              };  
+              res.send(JSON.stringify(response));           
+            }
+          });
+        });
+    }, 
     obtenerDosPelisRandom: (req, res) => {
         let idCompetencia = req.params.id
         const sqlCompetencia = `select id from competencia where id = ${idCompetencia}`

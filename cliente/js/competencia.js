@@ -107,8 +107,8 @@ function CompetenciasController () {
 		var data = {'idPelicula': idPelicula};
 		// Se realiza el post a la api
 	    $.post(server+"/competencias/"+idCompetencia+"/voto", data, function(response) {
-	    	// Se redirige al usuario a ver los resultados de la competencia en la que votó
-		    window.location.replace("resultados.html?id="+idCompetencia);
+			// Se redirige al usuario a ver los resultados de la competencia en la que votó
+			window.location.replace("resultados.html?id="+idCompetencia);
 		}, 'json');
 	},
 
