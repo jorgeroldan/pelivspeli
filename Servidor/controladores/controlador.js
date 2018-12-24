@@ -83,6 +83,13 @@ const controlador = {
                             }
                         });
                     }
+                    if (generoCompetencia > 0 && directorCompetencia > 0 && actorCompetencia > 0){
+                        let minimoPeliculas = true
+                        if (minimoPeliculas){
+                            console.log("No hay suficientes peliculas para crear esta competencia")
+                            return res.status(422).send("No hay suficientes peliculas para crear esta competencia");
+                        } 
+                    }
                     res.sendStatus(200);
                 });
             }
