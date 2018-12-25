@@ -7,9 +7,10 @@ const controlador = require('./controladores/controlador');
 
 const app = express();
 
-//habilitar permisos para hacer peticiones sin tantas restricciones de seguridad
+//Habilitar permisos para hacer peticiones sin tantas restricciones de seguridad
 app.use(cors());
 
+//Instala un middleware para extraer los request y verlos a traves de req.body
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -33,13 +34,14 @@ app.get('/competencias/:id/resultados', controlador.buscarResultados);
 //rutas post
 app.post('/competencias', controlador.nuevaCompetencia);
 app.post('/competencias/:id/voto', controlador.guardarVotos);
+//rutas put
 app.put('/competencias/:id', controlador.editarCompetencias);
 //rutas delete
 app.delete('/competencias/:id', controlador.eliminarCompetencias);
 app.delete('/competencias/:id/votos', controlador.reiniciarCompetenciasSinVotos);
 
 
-//seteamos el puerto en el cual va a escuchar los pedidos la aplicación
+//Seteamos el puerto en el cual va a escuchar los pedidos la aplicación
 const puerto = '8080';
 
 app.listen(puerto, function () {

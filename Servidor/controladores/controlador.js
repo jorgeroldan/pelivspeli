@@ -45,8 +45,8 @@ const controlador = {
 
             if (resultado.length === 1) {
                 nombreRepetido = true;
-                console.log("Ya hay una competencia con este nomnbre");
-                return res.status(422).send("Ya hay una competencia con este nomnbre");
+                console.log("Ya hay una competencia con este nombre");
+                return res.status(422).send("Ya hay una competencia con este nombre");
             }
 
             if (!nombreRepetido) {
@@ -58,7 +58,7 @@ const controlador = {
                     if (generoCompetencia > 0) {
                         let sqlGenero = `UPDATE competencia SET genero_id = ${generoCompetencia} WHERE nombre = '${nombreCompetencia}';`;
                         console.log(`sqlGenero`, sqlGenero)
-                        con_db.query(sqlGenero, (errorGenero, resultadoGenero, fieldsGenero) => {
+                        con_db.query(sqlGenero, (errorGenero, resultadoGenero) => {
                             if (errorGenero) {
                                 console.log("Hubo un error en el servidor // genero")
                                 return res.status(500).send("Hubo un error en el servidor");
@@ -67,7 +67,7 @@ const controlador = {
                     }
                     if (directorCompetencia > 0) {
                         let sqlDirector = `UPDATE competencia SET director_id = ${directorCompetencia} WHERE nombre = '${nombreCompetencia}';`;
-                        con_db.query(sqlDirector, (errorDirector, resultadoDirector, fieldsDirector) => {
+                        con_db.query(sqlDirector, (errorDirector, resultadoDirector) => {
                             if (errorDirector) {
                                 console.log("Hubo un error en el servidor // director")
                                 return res.status(500).send("Hubo un error en el servidor");
@@ -76,7 +76,7 @@ const controlador = {
                     }
                     if (actorCompetencia > 0) {
                         let sqlActor = `UPDATE competencia SET actor_id = ${actorCompetencia} WHERE nombre = '${nombreCompetencia}';`;
-                        con_db.query(sqlActor, (errorActor, resultadoActor, fieldsActor) => {
+                        con_db.query(sqlActor, (errorActor, resultadoActor) => {
                             if (errorActor) {
                                 console.log("Hubo un error en el servidor // actor")
                                 return res.status(500).send("Hubo un error en el servidor");
@@ -146,7 +146,7 @@ const controlador = {
         let sql = `SELECT nombre, genero_id, director_id, actor_id FROM competencia WHERE id=${idCompetencia};`;
         let tablas = '';
         let condiciones = '';
-        let nombreCompetencia, filtros, sql_;
+        let nombreCompetencia, filtros, sqlRandom;
 
         con_db.query(sql, (error, resultado) => {
             if (error) {
@@ -155,7 +155,7 @@ const controlador = {
             filtros = resultado[0];
             nombreCompetencia = resultado[0].nombre;
 
-            sql_ = `SELECT * FROM pelicula ORDER BY RAND() limit 2;`;
+            sqlRandom = `SELECT * FROM pelicula ORDER BY RAND() limit 2;`;
 
             if (filtros.genero_id != undefined) {
                 tablas = `JOIN genero g ON p.genero_id = g.id`;
@@ -181,19 +181,19 @@ const controlador = {
                 tablas = `JOIN actor_pelicula ap ON p.id = ap.pelicula_id`;
                 condiciones = `WHERE ap.actor_id = ${filtros.actor_id}`;
             }
-            sql_ = `SELECT p.* FROM pelicula p ${tablas} ${condiciones} ORDER BY RAND() limit 2;`;
-            con_db.query(sql_, (error_, resultado_) => {
-                if (error_) {
+            sqlRandom = `SELECT p.* FROM pelicula p ${tablas} ${condiciones} ORDER BY RAND() limit 2;`;
+            con_db.query(sqlRandom, (error, resultado) => {
+                if (error) {
                     return res.status(404).send("No se encontró la competencia");
                 }
-                if (resultado_ == undefined || resultado_.length < 2) {
+                if (resultado == undefined || resultado.length < 2) {
                     return res.status(422).send("No hay resultados suficientes para realizar la competencia.");
                 } else {
-                    let response = {
+                    let responseConFiltros = {
                         'competencia': nombreCompetencia,
-                        'peliculas': resultado_
+                        'peliculas': resultado
                     };
-                    res.send(JSON.stringify(response));
+                    res.send(JSON.stringify(responseConFiltros));
                 }
             });
         });
@@ -228,7 +228,7 @@ const controlador = {
         let idCompetencia = req.params.id;
         let idPelicula = parseInt(req.body.idPelicula);
         let sql = `INSERT INTO voto_pelicula (competencia_id, pelicula_id) VALUES (${idCompetencia}, ${idPelicula});`;
-        con_db.query(sql, (error, resultado, fields) => {
+        con_db.query(sql, (error, resultado) => {
             res.json(resultado);
         });
     },
@@ -237,8 +237,8 @@ const controlador = {
         let sql = `DELETE FROM voto_pelicula WHERE competencia_id = ${idCompetencia};`;
         let sqlCompetencia = `SELECT * FROM competencia WHERE id = ${idCompetencia};`
       
-        con_db.query(sqlCompetencia, (error_, resultado_,)=> {
-          if (resultado_ == 0) {
+        con_db.query(sqlCompetencia, (error, resultado,)=> {
+          if (resultado == 0) {
             return res.status(404).send("No existe la competencia seleccionada.");
           }else{
             con_db.query(sql, (error, resultado, fields)=> {
