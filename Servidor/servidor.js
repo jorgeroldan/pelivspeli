@@ -22,9 +22,9 @@ app.use('/', express.static(path.join(__dirname, '/../cliente/html')))
 app.use('/', express.static(path.join(__dirname, '/../cliente/html/administrar')))
 
 //rutas get
+app.get('/generos', controlador.buscarGenero)
 app.get('/actores', controlador.buscarActor)
 app.get('/directores', controlador.buscarDirector)
-app.get('/generos', controlador.buscarGenero)
 app.get('/competencias', controlador.listarCompetencias);
 app.get('/competencias/:id', controlador.listarCompetenciaId);
 app.get('/competencias/:id/peliculas', controlador.buscarOpciones);
@@ -37,7 +37,6 @@ app.put('/competencias/:id', controlador.editarCompetencias);
 //rutas delete
 app.delete('/competencias/:id', controlador.eliminarCompetencias);
 app.delete('/competencias/:id/votos', controlador.reiniciarCompetenciasSinVotos);
-
 
 
 //seteamos el puerto en el cual va a escuchar los pedidos la aplicación

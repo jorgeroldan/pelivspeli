@@ -124,7 +124,7 @@ const controlador = {
     },
     eliminarCompetencias: (req, res) => {
         let idCompetencia = req.params.id;
-        let sql = `DELETE FROM competencia_pelicula WHERE competencia_id = ${idCompetencia};`;
+        let sql = `DELETE FROM voto_pelicula WHERE competencia_id = ${idCompetencia};`;
         let sql_ = `DELETE FROM competencia WHERE id = ${idCompetencia};`;
 
         con_db.query(sql, (error, resultado, fields) => {
@@ -227,14 +227,14 @@ const controlador = {
     guardarVotos: (req, res) => {
         let idCompetencia = req.params.id;
         let idPelicula = parseInt(req.body.idPelicula);
-        let sql = `INSERT INTO competencia_pelicula (competencia_id, pelicula_id) VALUES (${idCompetencia}, ${idPelicula});`;
+        let sql = `INSERT INTO voto_pelicula (competencia_id, pelicula_id) VALUES (${idCompetencia}, ${idPelicula});`;
         con_db.query(sql, (error, resultado, fields) => {
             res.json(resultado);
         });
     },
     reiniciarCompetenciasSinVotos: (req, res)=>{
         let idCompetencia = req.params.id;
-        let sql = `DELETE FROM competencia_pelicula WHERE competencia_id = ${idCompetencia};`;
+        let sql = `DELETE FROM voto_pelicula WHERE competencia_id = ${idCompetencia};`;
         let sqlCompetencia = `SELECT * FROM competencia WHERE id = ${idCompetencia};`
       
         con_db.query(sqlCompetencia, (error_, resultado_,)=> {
@@ -252,8 +252,8 @@ const controlador = {
     }, 
     buscarResultados: (req, res) => {
         let idCompetencia = req.params.id;
-        let sql = `SELECT cp.pelicula_id, p.poster, p.titulo, COUNT(*) AS votos FROM competencia_pelicula cp JOIN pelicula p ON pelicula_id = p.id WHERE cp.competencia_id = ${idCompetencia} GROUP BY cp.pelicula_id, p.poster ORDER BY votos DESC LIMIT 3;`;
-        let sql_ = `SELECT c.nombre as nombre FROM competencia_pelicula cp JOIN competencia c ON competencia_id = c.id WHERE cp.competencia_id = ${idCompetencia};`;
+        let sql = `SELECT cp.pelicula_id, p.poster, p.titulo, COUNT(*) AS votos FROM voto_pelicula cp JOIN pelicula p ON pelicula_id = p.id WHERE cp.competencia_id = ${idCompetencia} GROUP BY cp.pelicula_id, p.poster ORDER BY votos DESC LIMIT 3;`;
+        let sql_ = `SELECT c.nombre as nombre FROM voto_pelicula cp JOIN competencia c ON competencia_id = c.id WHERE cp.competencia_id = ${idCompetencia};`;
 
         con_db.query(sql_, (error_, resultado_, fields_) => {
             if (error_) {
