@@ -99,14 +99,14 @@ const controlador = {
         let idCompetencia = req.params.id;
         let nombreCompetencia = req.body.nombre;
         let sql = `UPDATE competencia SET nombre = '${nombreCompetencia}' WHERE id = ${idCompetencia};`;
-        let sql_ = `SELECT nombre FROM competencia;`
+        let sqlCompetencia = `SELECT nombre FROM competencia;`
         let nombreRepetido = false;
 
-        con_db.query(sql_, (error_, resultado_, fields_) => {
-            if (error_) {
+        con_db.query(sqlCompetencia, (error, resultado) => {
+            if (error) {
                 return res.status(500).send("Hubo un error en el servidor");
             }
-            resultado_.forEach(competencia => {
+            resultado.forEach(competencia => {
                 if (competencia.nombre == nombreCompetencia) {
                     nombreRepetido = true;
                     return res.status(422).send("Ya existe una competencia con el nombre ingresado.");
@@ -125,16 +125,16 @@ const controlador = {
     eliminarCompetencias: (req, res) => {
         let idCompetencia = req.params.id;
         let sql = `DELETE FROM voto_pelicula WHERE competencia_id = ${idCompetencia};`;
-        let sql_ = `DELETE FROM competencia WHERE id = ${idCompetencia};`;
+        let sqlCompetencia = `DELETE FROM competencia WHERE id = ${idCompetencia};`;
 
         con_db.query(sql, (error, resultado, fields) => {
             if (error) {
                 console.log("Hubo un error en la consulta", error.message);
                 return res.status(404).send("Hubo un error en la consulta");
             }
-            con_db.query(sql_, (error_, resultado_, fields_) => {
-                if (error_) {
-                    console.log("Hubo un error en la consulta", error_.message);
+            con_db.query(sqlCompetencia, (error, resultado) => {
+                if (error) {
+                    console.log("Hubo un error en la consulta", error.message);
                     return res.status(404).send("Hubo un error en la consulta");
                 }
             });
@@ -252,20 +252,20 @@ const controlador = {
     }, 
     buscarResultados: (req, res) => {
         let idCompetencia = req.params.id;
-        let sql = `SELECT cp.pelicula_id, p.poster, p.titulo, COUNT(*) AS votos FROM voto_pelicula cp JOIN pelicula p ON pelicula_id = p.id WHERE cp.competencia_id = ${idCompetencia} GROUP BY cp.pelicula_id, p.poster ORDER BY votos DESC LIMIT 3;`;
-        let sql_ = `SELECT c.nombre as nombre FROM voto_pelicula cp JOIN competencia c ON competencia_id = c.id WHERE cp.competencia_id = ${idCompetencia};`;
+        let sqlVotosDesc = `SELECT vp.pelicula_id, p.poster, p.titulo, COUNT(*) AS votos FROM voto_pelicula vp JOIN pelicula p ON pelicula_id = p.id WHERE vp.competencia_id = ${idCompetencia} GROUP BY vp.pelicula_id, p.poster ORDER BY votos DESC LIMIT 3;`;
+        let sqlCompetenciaVotos = `SELECT c.nombre as nombre FROM voto_pelicula vp JOIN competencia c ON competencia_id = c.id WHERE vp.competencia_id = ${idCompetencia};`;
 
-        con_db.query(sql_, (error_, resultado_, fields_) => {
-            if (error_) {
-                console.log("Hubo un error en la consulta", error_.message);
+        con_db.query(sqlCompetenciaVotos, (error, resultado) => {
+            if (error) {
+                console.log("Hubo un error en la consulta", error.message);
                 return res.status(404).send("Hubo un error en la consulta");
-            } else if (resultado_.length == 0) {
+            } else if (resultado.length == 0) {
                 return res.status(404).send("No hay películas votadas para esta competencia.");
             }
 
-            let nombreCompetencia = resultado_[0].nombre;
+            let nombreCompetencia = resultado[0].nombre;
 
-            con_db.query(sql, (error, resultado, fields) => {
+            con_db.query(sqlVotosDesc, (error, resultado) => {
                 if (error) {
                     console.log("Hubo un error en la consulta", error.message);
                     return res.status(404).send("Hubo un error en la consulta");
