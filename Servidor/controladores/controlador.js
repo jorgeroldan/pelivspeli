@@ -8,21 +8,31 @@ const controlador = {
                 console.log("Chann hubo un error en la consulta", error.message);
                 return res.status(404).send("Hubo un error en la consulta");
             }
+            // const response = {
+            //     id: resultado.id, 
+            //     genero: resultado.genero_id, 
+            //     director: resultado.director_id,
+            //     actor: resultado.actor_id 
+            // }
+            // console.log(response)
             res.send(JSON.stringify(resultado));
         });
     },
     listarCompetenciaId: (req, res) => {
         let idCompetencia = req.params.id
-        const sql = `select * from competencia where ${idCompetencia}`
-        con_db.query(sql, (error, resultado) => {
+        const sqlporId = `SELECT competencia.nombre AS nombre, genero.nombre AS genero_nombre, actor.nombre AS actor_nombre, director.nombre AS director_nombre FROM competencia LEFT JOIN genero ON competencia.genero_id = genero.id LEFT JOIN actor ON competencia.actor_id = actor.id LEFT JOIN director ON competencia.director_id = director.id WHERE competencia.id = ${idCompetencia}`;
+        con_db.query(sqlporId, (error, resultado) => {
             if (error) {
                 console.log("Chann hubo un error en la consulta", error.message);
                 return res.status(404).send("Hubo un error en la consulta");
-            }
+            }  
             const response = {
-                id: resultado[0].id
+                nombre: resultado[0].nombre, 
+                genero_nombre: resultado[0].genero_nombre, 
+                actor_nombre: resultado[0].actor_nombre, 
+                director_nombre: resultado[0].director_nombre
             }
-            res.send(JSON.stringify(response.id));
+            res.send(JSON.stringify(response));
         });
     },
     nuevaCompetencia: (req, res) => {
@@ -38,7 +48,7 @@ const controlador = {
         let sql = `INSERT INTO competencia (nombre) VALUES ('${nombreCompetencia}');`;
         let sqlCompetencia = `SELECT * FROM competencia WHERE nombre = "${nombreCompetencia}"`;
 
-        con_db.query(sqlCompetencia, (error, resultado, fields) => {
+        con_db.query(sqlCompetencia, (error, resultado) => {
             if (error) {
                 return res.status(500).send("Hubo un error en el servidor");
             }
@@ -60,7 +70,7 @@ const controlador = {
                         console.log(`sqlGenero`, sqlGenero)
                         con_db.query(sqlGenero, (errorGenero, resultadoGenero) => {
                             if (errorGenero) {
-                                console.log("Hubo un error en el servidor // genero")
+                                console.log("Hubo un error en el servidor // Consulta genero")
                                 return res.status(500).send("Hubo un error en el servidor");
                             }
                         });
@@ -69,7 +79,7 @@ const controlador = {
                         let sqlDirector = `UPDATE competencia SET director_id = ${directorCompetencia} WHERE nombre = '${nombreCompetencia}';`;
                         con_db.query(sqlDirector, (errorDirector, resultadoDirector) => {
                             if (errorDirector) {
-                                console.log("Hubo un error en el servidor // director")
+                                console.log("Hubo un error en el servidor // Consulta director")
                                 return res.status(500).send("Hubo un error en el servidor");
                             }
                         });
@@ -78,7 +88,7 @@ const controlador = {
                         let sqlActor = `UPDATE competencia SET actor_id = ${actorCompetencia} WHERE nombre = '${nombreCompetencia}';`;
                         con_db.query(sqlActor, (errorActor, resultadoActor) => {
                             if (errorActor) {
-                                console.log("Hubo un error en el servidor // actor")
+                                console.log("Hubo un error en el servidor // Consulta actor")
                                 return res.status(500).send("Hubo un error en el servidor");
                             }
                         });
@@ -113,7 +123,7 @@ const controlador = {
                 }
             });
             if (!nombreRepetido) {
-                con_db.query(sql, (error, resultado, fields) => {
+                con_db.query(sql, (error, resultado) => {
                     if (error) {
                         return res.status(500).send("Hubo un error en el servidor");
                     }
@@ -127,7 +137,7 @@ const controlador = {
         let sql = `DELETE FROM voto_pelicula WHERE competencia_id = ${idCompetencia};`;
         let sqlCompetencia = `DELETE FROM competencia WHERE id = ${idCompetencia};`;
 
-        con_db.query(sql, (error, resultado, fields) => {
+        con_db.query(sql, (error, resultado) => {
             if (error) {
                 console.log("Hubo un error en la consulta", error.message);
                 return res.status(404).send("Hubo un error en la consulta");
@@ -136,11 +146,13 @@ const controlador = {
                 if (error) {
                     console.log("Hubo un error en la consulta", error.message);
                     return res.status(404).send("Hubo un error en la consulta");
-                }
+                } 
             });
+
             res.status(200).send(`La competencia se eliminó correctamente.`)
         });
     },
+
     buscarOpciones: (req, res) => {
         let idCompetencia = req.params.id;
         let sql = `SELECT nombre, genero_id, director_id, actor_id FROM competencia WHERE id=${idCompetencia};`;
@@ -241,7 +253,7 @@ const controlador = {
           if (resultado == 0) {
             return res.status(404).send("No existe la competencia seleccionada.");
           }else{
-            con_db.query(sql, (error, resultado, fields)=> {
+            con_db.query(sql, (error, resultado)=> {
               if (error) {
                 return res.status(500).send("Hubo un error en el servidor");
               }
