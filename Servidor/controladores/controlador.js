@@ -20,7 +20,7 @@ const controlador = {
     },
     listarCompetenciaId: (req, res) => {
         let idCompetencia = req.params.id
-        const sqlporId = `SELECT competencia.nombre AS nombre, genero.nombre AS genero_nombre, actor.nombre AS actor_nombre, director.nombre AS director_nombre FROM competencia LEFT JOIN genero ON competencia.genero_id = genero.id LEFT JOIN actor ON competencia.actor_id = actor.id LEFT JOIN director ON competencia.director_id = director.id WHERE competencia.id = ${idCompetencia}`;
+        const sqlporId = `SELECT competencia.nombre, genero.nombre AS genero_nombre, actor.nombre AS actor_nombre, director.nombre AS director_nombre FROM competencia LEFT JOIN genero ON competencia.genero_id = genero.id LEFT JOIN actor ON competencia.actor_id = actor.id LEFT JOIN director ON competencia.director_id = director.id WHERE competencia.id = ${idCompetencia}`;
         con_db.query(sqlporId, (error, resultado) => {
             if (error) {
                 console.log("Chann hubo un error en la consulta", error.message);
